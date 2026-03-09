@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    image: zookeeper
+    image: wurstmeister/zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -8,15 +8,22 @@ services:
   kafka:
     depends_on:
       - zookeeper
-    image: bitnami/kafka
+    image: wurstmeister/kafka
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: 0.0.0.0
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
       ALLOW_PLAINTEXT_LISTENER: "yes"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
   
   barista:
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     build:
       context: ./
       dockerfile: ./barista/Dockerfile
@@ -28,7 +35,10 @@ services:
 
   beans:
     depends_on:
-      - barista
+      kafka:
+        condition: service_healthy
+      barista:
+        condition: service_started
     build:
       context: ./
       dockerfile: ./beans/Dockerfile
@@ -39,7 +49,10 @@ services:
 
   orders:
     depends_on:
-      - beans
+      kafka:
+        condition: service_healthy
+      beans:
+        condition: service_started
     build:
       context: ./
       dockerfile: ./orders/Dockerfile
