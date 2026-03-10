@@ -1,4 +1,4 @@
-FROM gradle:4.7.0-jdk8-alpine AS builder
+FROM gradle:6-jdk8  AS builder
 
 COPY --chown=gradle:gradle . .
 
