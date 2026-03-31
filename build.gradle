@@ -17,6 +17,7 @@ subprojects {
     dependencies {
         providedCompile "javax:javaee-api:$javaeeApiVersion"
         providedCompile "org.apache.kafka:kafka-clients:$kafkaVersion"
+        compile "org.slf4j:slf4j-jdk14:1.7.25"
 
         testCompile "junit:junit:$junitVersion"
         testCompile "org.mockito:mockito-all:$mockitoVersion"
